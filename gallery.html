@@ -29,12 +29,6 @@
             transform: scale(1.02);
         }
         
-        .photo-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
         .photo-placeholder {
             width: 100%;
             height: 100%;
@@ -76,23 +70,16 @@
             opacity: 0.8;
         }
         
-        .tips {
+        .empty-state {
             text-align: center;
-            max-width: 600px;
-            margin: 3rem auto;
-            padding: 2rem;
-            background: #f8f9fa;
-            border-radius: 12px;
+            padding: 4rem 2rem;
+            color: #888;
+            grid-column: 1 / -1;
         }
         
-        .tips h3 {
-            color: #1a1a2e;
+        .empty-state .icon {
+            font-size: 4rem;
             margin-bottom: 1rem;
-        }
-        
-        .tips p {
-            color: #666;
-            font-size: 0.95rem;
         }
     </style>
 </head>
@@ -112,84 +99,74 @@
     <section style="padding-top: 8rem;">
         <h2>🖼️ 照片墙</h2>
         
-        <div class="photo-grid">
-            
-            <div class="photo-card">
-                <div class="photo-placeholder">
-                    <span class="icon">🌅</span>
-                    <span class="desc">日落晚霞</span>
-                </div>
-                <div class="photo-overlay">
-                    <h4>日落时分</h4>
-                    <p>城市边缘的晚霞</p>
-                </div>
-            </div>
-            
-            <div class="photo-card">
-                <div class="photo-placeholder" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                    <span class="icon">🏔️</span>
-                    <span class="desc">山川风景</span>
-                </div>
-                <div class="photo-overlay">
-                    <h4>山野漫步</h4>
-                    <p>亲近大自然</p>
-                </div>
-            </div>
-            
-            <div class="photo-card">
-                <div class="photo-placeholder" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);">
-                    <span class="icon">☕</span>
-                    <span class="desc">咖啡时光</span>
-                </div>
-                <div class="photo-overlay">
-                    <h4>咖啡下午茶</h4>
-                    <p>周末的悠闲时光</p>
-                </div>
-            </div>
-            
-            <div class="photo-card">
-                <div class="photo-placeholder" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                    <span class="icon">🌊</span>
-                    <span class="desc">海边风景</span>
-                </div>
-                <div class="photo-overlay">
-                    <h4>海边日落</h4>
-                    <p>聆听海浪声</p>
-                </div>
-            </div>
-            
-            <div class="photo-card">
-                <div class="photo-placeholder" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-                    <span class="icon">🌸</span>
-                    <span class="desc">城市街景</span>
-                </div>
-                <div class="photo-overlay">
-                    <h4>街头巷尾</h4>
-                    <p>发现城市之美</p>
-                </div>
-            </div>
-            
-            <div class="photo-card">
-                <div class="photo-placeholder" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
-                    <span class="icon">🎬</span>
-                    <span class="desc">生活记录</span>
-                </div>
-                <div class="photo-overlay">
-                    <h4>电影之夜</h4>
-                    <p>重温经典老片</p>
-                </div>
-            </div>
-            
-        </div>
-        
-        <div class="tips">
-            <h3>💡 如何添加自己的照片</h3>
-            <p>替换方法：在 GitHub 仓库创建 images 文件夹，上传照片后把 .photo-placeholder 替换为 img 标签即可。后续我会教你具体操作方法。</p>
+        <div class="photo-grid" id="photo-container">
+            <!-- 照片由JS加载 -->
         </div>
     </section>
 
     <footer>
         <p>© 2026 Dylankwal. 用心生活，天天向上。</p>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGallery();
+            loadName();
+        });
+        
+        function loadName() {
+            const profile = JSON.parse(localStorage.getItem('siteProfile') || '{}');
+            if (profile.name) {
+                document.querySelector('footer p').innerHTML = 
+                    '© 2026 ' + profile.name + '. 用心生活，天天向上。';
+            }
+        }
+        
+        function loadGallery() {
+            const photos = JSON.parse(localStorage.getItem('sitePhotos') || '[]');
+            const container = document.getElementById('photo-container');
+            
+            // 默认照片
+            const defaultPhotos = [
+                { icon: '🌅', title: '日落时分', detail: '城市边缘的晚霞' },
+                { icon: '🏔️', title: '山野漫步', detail: '亲近大自然' },
+                { icon: '☕', title: '咖啡下午茶', detail: '周末的悠闲时光' },
+                { icon: '🌊', title: '海边日落', detail: '聆听海浪声' },
+                { icon: '🌸', title: '街头巷尾', detail: '发现城市之美' },
+                { icon: '🎬', title: '电影之夜', detail: '重温经典老片' }
+            ];
+            
+            // 合并：用户添加的照片优先
+            const allPhotos = photos.length > 0 ? photos : defaultPhotos;
+            
+            if (allPhotos.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🖼️</div>
+                        <p>还没有照片</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = allPhotos.map(p => `
+                <div class="photo-card">
+                    <div class="photo-placeholder" style="background: linear-gradient(135deg, ${getRandomColor()} 0%, ${getRandomColor()} 100%);">
+                        <span class="icon">${p.icon}</span>
+                        <span class="desc">${p.title}</span>
+                    </div>
+                    <div class="photo-overlay">
+                        <h4>${p.title}</h4>
+                        <p>${p.detail || ''}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function getRandomColor() {
+            const colors = ['#667eea', '#764ba2', '#11998e', '#38ef7d', '#ee0979', '#ff6a00', '#4facfe', '#00f2fe', '#fa709a', '#fee140'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+    </script>
 </body>
 </html>
