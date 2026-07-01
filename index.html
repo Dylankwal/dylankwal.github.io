@@ -23,8 +23,8 @@
     <!-- 首屏区域 -->
     <section id="home" class="hero">
         <div class="hero-content">
-            <h1>你好，我是 Dylankwal</h1>
-            <p>热爱探索世界，喜欢记录生活的每一个瞬间</p>
+            <h1 id="hero-name">你好，我是 Dylankwal</h1>
+            <p id="hero-tagline">热爱探索世界，喜欢记录生活的每一个瞬间</p>
             <a href="#contact" class="btn">联系我</a>
         </div>
     </section>
@@ -34,19 +34,17 @@
         <h2>关于我</h2>
         <div class="about-content">
             <div class="about-text">
-                <p>你好！我是一个对生活充满好奇的人。</p>
+                <p id="about-text">你好！我是一个对生活充满好奇的人。</p>
                 <p>喜欢尝试新事物，追求简单而有意义的生活。无论是在学习新技能，还是在旅途中发现美景，都让我感到充实和快乐。</p>
                 <p>这个网站是我的个人空间，用来分享我的想法、经历和作品。希望能在这里认识更多志同道合的朋友。</p>
             </div>
             <div class="skills">
                 <h3>兴趣标签</h3>
-                <div class="skill-tags">
+                <div class="skill-tags" id="skills-container">
                     <span>摄影</span>
                     <span>旅行</span>
                     <span>阅读</span>
                     <span>音乐</span>
-                    <span>科技</span>
-                    <span>美食</span>
                 </div>
             </div>
         </div>
@@ -83,7 +81,7 @@
     <section id="gallery-preview">
         <h2>📸 照片墙预览</h2>
         <p style="text-align:center; margin-bottom:2rem; color:#666;">点击查看更多照片 → <a href="gallery.html" style="color:#e94560;">进入相册</a></p>
-        <div class="projects-grid" style="max-width:1000px; margin:0 auto;">
+        <div class="projects-grid" style="max-width:1000px; margin:0 auto;" id="gallery-preview-grid">
             <div class="project-card">
                 <div class="emoji">🌅</div>
                 <h3>日落时分</h3>
@@ -107,7 +105,7 @@
         <div style="max-width:1000px; margin:0 auto; padding:5rem 2rem;">
             <h2>📝 最新文章</h2>
             <p style="text-align:center; margin-bottom:2rem; color:#666;">点击阅读更多 → <a href="blog.html" style="color:#e94560;">进入博客</a></p>
-            <div class="projects-grid">
+            <div class="projects-grid" id="blog-preview-grid">
                 <div class="project-card">
                     <h3>第一次尝试徒步</h3>
                     <p>上周和朋友去了一趟郊外徒步，虽然很累，但看到山顶的风景那一刻，觉得一切都值了...</p>
@@ -131,17 +129,93 @@
             <p>如果你也想交个朋友，或者有任何想聊的话题</p>
             <p>欢迎给我发邮件！</p>
             <div class="contact-links">
-                <a href="mailto:guoyuchen200749@163.com">📧 发送邮件</a>
+                <a href="mailto:guoyuchen200749@163.com" id="contact-email">📧 发送邮件</a>
                 <a href="message.html">💬 留言板</a>
             </div>
-            <div class="email-display">guoyuchen200749@163.com</div>
+            <div class="email-display" id="contact-email-display">guoyuchen200749@163.com</div>
         </div>
     </section>
 
     <!-- 页脚 -->
     <footer>
-        <p>© 2026 Dylankwal. 用心生活，天天向上。</p>
+        <p>© 2026 <span id="footer-name">Dylankwal</span>. 用心生活，天天向上。</p>
     </footer>
+
+    <script>
+        // 页面加载时读取后台保存的数据
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProfile();
+            loadBlogPreview();
+            loadGalleryPreview();
+            loadContact();
+        });
+        
+        // 读取个人信息
+        function loadProfile() {
+            const profile = JSON.parse(localStorage.getItem('siteProfile') || '{}');
+            
+            if (profile.name) {
+                document.getElementById('hero-name').textContent = '你好，我是 ' + profile.name;
+                document.getElementById('footer-name').textContent = profile.name;
+                document.title = profile.name + ' - 个人网站';
+            }
+            
+            if (profile.tagline) {
+                document.getElementById('hero-tagline').textContent = profile.tagline;
+            }
+            
+            if (profile.about) {
+                document.getElementById('about-text').textContent = profile.about;
+            }
+            
+            if (profile.interests) {
+                const tags = profile.interests.split(',').map(t => t.trim()).filter(t => t);
+                const container = document.getElementById('skills-container');
+                container.innerHTML = tags.map(t => `<span>${t}</span>`).join('');
+            }
+        }
+        
+        // 读取博客预览
+        function loadBlogPreview() {
+            const articles = JSON.parse(localStorage.getItem('siteArticles') || '[]');
+            const container = document.getElementById('blog-preview-grid');
+            
+            if (articles.length > 0) {
+                container.innerHTML = articles.slice(0, 3).map(a => `
+                    <div class="project-card">
+                        <h3>${a.title}</h3>
+                        <p>${a.content.substring(0, 60)}${a.content.length > 60 ? '...' : ''}</p>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // 读取相册预览
+        function loadGalleryPreview() {
+            const photos = JSON.parse(localStorage.getItem('sitePhotos') || '[]');
+            const container = document.getElementById('gallery-preview-grid');
+            
+            if (photos.length > 0) {
+                container.innerHTML = photos.slice(0, 3).map(p => `
+                    <div class="project-card">
+                        <div class="emoji">${p.icon}</div>
+                        <h3>${p.title}</h3>
+                        <p>${p.detail || ''}</p>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // 读取联系方式
+        function loadContact() {
+            const contact = JSON.parse(localStorage.getItem('siteContact') || '{}');
+            
+            if (contact.email) {
+                const email = contact.email;
+                document.getElementById('contact-email').href = 'mailto:' + email;
+                document.getElementById('contact-email-display').textContent = email;
+            }
+        }
+    </script>
 </body>
 </html>
-
