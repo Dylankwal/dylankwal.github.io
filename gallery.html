@@ -108,22 +108,44 @@
         <p>© 2026 Dylankwal. 用心生活，天天向上。</p>
     </footer>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
     <script>
+        // Firebase 配置（你的项目）
+        const firebaseConfig = {
+            apiKey: "AIzaSyAcrFCK-nYFNDuAh3GbdM1U-Td458V5ILQ",
+            authDomain: "my-website-data-188e6.firebaseapp.com",
+            databaseURL: "https://my-website-data-188e6-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "my-website-data-188e6",
+            storageBucket: "my-website-data-188e6.firebasestorage.app",
+            messagingSenderId: "693388911917",
+            appId: "1:693388911917:web:b54134ae1e02db47749fa4"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         document.addEventListener('DOMContentLoaded', function() {
             loadGallery();
             loadName();
         });
         
         function loadName() {
-            const profile = JSON.parse(localStorage.getItem('siteProfile') || '{}');
-            if (profile.name) {
-                document.querySelector('footer p').innerHTML = 
-                    '© 2026 ' + profile.name + '. 用心生活，天天向上。';
-            }
+            const profileRef = db.ref('profile');
+            profileRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.name) {
+                    document.querySelector('footer p').innerHTML = 
+                        '© 2026 ' + data.name + '. 用心生活，天天向上。';
+                }
+            });
         }
         
         function loadGallery() {
-            const photos = JSON.parse(localStorage.getItem('sitePhotos') || '[]');
+            const photosRef = db.ref('photos');
             const container = document.getElementById('photo-container');
             
             // 默认照片
@@ -136,31 +158,54 @@
                 { icon: '🎬', title: '电影之夜', detail: '重温经典老片' }
             ];
             
-            // 合并：用户添加的照片优先
-            const allPhotos = photos.length > 0 ? photos : defaultPhotos;
-            
-            if (allPhotos.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">🖼️</div>
-                        <p>还没有照片</p>
+            photosRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                
+                if (data) {
+                    // Firebase 数据存在
+                    const photos = Object.values(data);
+                    container.innerHTML = photos.map(p => `
+                        <div class="photo-card">
+                            <div class="photo-placeholder" style="background: linear-gradient(135deg, ${getRandomColor()} 0%, ${getRandomColor()} 100%);">
+                                <span class="icon">${p.icon}</span>
+                                <span class="desc">${p.title}</span>
+                            </div>
+                            <div class="photo-overlay">
+                                <h4>${p.title}</h4>
+                                <p>${p.detail || ''}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    // 使用默认照片
+                    container.innerHTML = defaultPhotos.map(p => `
+                        <div class="photo-card">
+                            <div class="photo-placeholder" style="background: linear-gradient(135deg, ${getRandomColor()} 0%, ${getRandomColor()} 100%);">
+                                <span class="icon">${p.icon}</span>
+                                <span class="desc">${p.title}</span>
+                            </div>
+                            <div class="photo-overlay">
+                                <h4>${p.title}</h4>
+                                <p>${p.detail || ''}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }, (error) => {
+                // 出错时使用默认
+                container.innerHTML = defaultPhotos.map(p => `
+                    <div class="photo-card">
+                        <div class="photo-placeholder" style="background: linear-gradient(135deg, ${getRandomColor()} 0%, ${getRandomColor()} 100%);">
+                            <span class="icon">${p.icon}</span>
+                            <span class="desc">${p.title}</span>
+                        </div>
+                        <div class="photo-overlay">
+                            <h4>${p.title}</h4>
+                            <p>${p.detail || ''}</p>
+                        </div>
                     </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = allPhotos.map(p => `
-                <div class="photo-card">
-                    <div class="photo-placeholder" style="background: linear-gradient(135deg, ${getRandomColor()} 0%, ${getRandomColor()} 100%);">
-                        <span class="icon">${p.icon}</span>
-                        <span class="desc">${p.title}</span>
-                    </div>
-                    <div class="photo-overlay">
-                        <h4>${p.title}</h4>
-                        <p>${p.detail || ''}</p>
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            });
         }
         
         function getRandomColor() {
