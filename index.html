@@ -141,80 +141,100 @@
         <p>© 2026 <span id="footer-name">Dylankwal</span>. 用心生活，天天向上。</p>
     </footer>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
     <script>
-        // 页面加载时读取后台保存的数据
+        // Firebase 配置（你的项目）
+        const firebaseConfig = {
+            apiKey: "AIzaSyAcrFCK-nYFNDuAh3GbdM1U-Td458V5ILQ",
+            authDomain: "my-website-data-188e6.firebaseapp.com",
+            databaseURL: "https://my-website-data-188e6-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "my-website-data-188e6",
+            storageBucket: "my-website-data-188e6.firebasestorage.app",
+            messagingSenderId: "693388911917",
+            appId: "1:693388911917:web:b54134ae1e02db47749fa4"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 页面加载时从 Firebase 读取数据
         document.addEventListener('DOMContentLoaded', function() {
-            loadProfile();
-            loadBlogPreview();
-            loadGalleryPreview();
-            loadContact();
+            loadFromFirebase();
         });
         
-        // 读取个人信息
-        function loadProfile() {
-            const profile = JSON.parse(localStorage.getItem('siteProfile') || '{}');
+        // 从 Firebase 读取所有数据
+        function loadFromFirebase() {
+            const profileRef = db.ref('profile');
+            const articlesRef = db.ref('articles');
+            const photosRef = db.ref('photos');
+            const contactRef = db.ref('contact');
             
-            if (profile.name) {
-                document.getElementById('hero-name').textContent = '你好，我是 ' + profile.name;
-                document.getElementById('footer-name').textContent = profile.name;
-                document.title = profile.name + ' - 个人网站';
-            }
+            // 读取个人资料
+            profileRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    if (data.name) {
+                        document.getElementById('hero-name').textContent = '你好，我是 ' + data.name;
+                        document.getElementById('footer-name').textContent = data.name;
+                        document.title = data.name + ' - 个人网站';
+                    }
+                    if (data.tagline) {
+                        document.getElementById('hero-tagline').textContent = data.tagline;
+                    }
+                    if (data.about) {
+                        document.getElementById('about-text').textContent = data.about;
+                    }
+                    if (data.interests) {
+                        const tags = data.interests.split(',').map(t => t.trim()).filter(t => t);
+                        const container = document.getElementById('skills-container');
+                        container.innerHTML = tags.map(t => `<span>${t}</span>`).join('');
+                    }
+                }
+            });
             
-            if (profile.tagline) {
-                document.getElementById('hero-tagline').textContent = profile.tagline;
-            }
+            // 读取博客预览
+            articlesRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    const articles = Object.values(data);
+                    const container = document.getElementById('blog-preview-grid');
+                    container.innerHTML = articles.slice(0, 3).map(a => `
+                        <div class="project-card">
+                            <h3>${a.title}</h3>
+                            <p>${(a.content || '').substring(0, 60)}${a.content && a.content.length > 60 ? '...' : ''}</p>
+                        </div>
+                    `).join('');
+                }
+            });
             
-            if (profile.about) {
-                document.getElementById('about-text').textContent = profile.about;
-            }
+            // 读取相册预览
+            photosRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    const photos = Object.values(data);
+                    const container = document.getElementById('gallery-preview-grid');
+                    container.innerHTML = photos.slice(0, 3).map(p => `
+                        <div class="project-card">
+                            <div class="emoji">${p.icon}</div>
+                            <h3>${p.title}</h3>
+                            <p>${p.detail || ''}</p>
+                        </div>
+                    `).join('');
+                }
+            });
             
-            if (profile.interests) {
-                const tags = profile.interests.split(',').map(t => t.trim()).filter(t => t);
-                const container = document.getElementById('skills-container');
-                container.innerHTML = tags.map(t => `<span>${t}</span>`).join('');
-            }
-        }
-        
-        // 读取博客预览
-        function loadBlogPreview() {
-            const articles = JSON.parse(localStorage.getItem('siteArticles') || '[]');
-            const container = document.getElementById('blog-preview-grid');
-            
-            if (articles.length > 0) {
-                container.innerHTML = articles.slice(0, 3).map(a => `
-                    <div class="project-card">
-                        <h3>${a.title}</h3>
-                        <p>${a.content.substring(0, 60)}${a.content.length > 60 ? '...' : ''}</p>
-                    </div>
-                `).join('');
-            }
-        }
-        
-        // 读取相册预览
-        function loadGalleryPreview() {
-            const photos = JSON.parse(localStorage.getItem('sitePhotos') || '[]');
-            const container = document.getElementById('gallery-preview-grid');
-            
-            if (photos.length > 0) {
-                container.innerHTML = photos.slice(0, 3).map(p => `
-                    <div class="project-card">
-                        <div class="emoji">${p.icon}</div>
-                        <h3>${p.title}</h3>
-                        <p>${p.detail || ''}</p>
-                    </div>
-                `).join('');
-            }
-        }
-        
-        // 读取联系方式
-        function loadContact() {
-            const contact = JSON.parse(localStorage.getItem('siteContact') || '{}');
-            
-            if (contact.email) {
-                const email = contact.email;
-                document.getElementById('contact-email').href = 'mailto:' + email;
-                document.getElementById('contact-email-display').textContent = email;
-            }
+            // 读取联系方式
+            contactRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.email) {
+                    document.getElementById('contact-email').href = 'mailto:' + data.email;
+                    document.getElementById('contact-email-display').textContent = data.email;
+                }
+            });
         }
     </script>
 </body>
