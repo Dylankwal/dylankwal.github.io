@@ -299,6 +299,13 @@
         .toast.success {
             background: #4caf50;
         }
+        
+        /* 同步状态 */
+        .sync-status {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-left: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -315,24 +322,23 @@
     <!-- 主界面 -->
     <div class="main-app" id="mainApp">
         <div class="topbar">
-            <h1>🎯 网站管理后台</h1>
+            <h1>🎯 网站管理后台 <span class="sync-status" id="syncStatus"></span></h1>
             <div class="topbar-actions">
                 <button class="btn-save" onclick="saveAll()">💾 保存全部</button>
                 <button class="btn-logout" onclick="logout()">退出</button>
             </div>
         </div>
         
-        <!-- 快捷操作 -->
         <div class="quick-actions">
             <button class="quick-btn" onclick="showSection('profile')">
                 <div class="icon">👤</div>
-                <div class="label">个人信息</div>
+                <div class="label">个人资料</div>
             </button>
             <button class="quick-btn" onclick="showSection('articles')">
                 <div class="icon">📝</div>
                 <div class="label">博客文章</div>
             </button>
-            <button class="quick-btn" onclick="showSection('gallery')">
+            <button class="quick-btn" onclick="showSection('photos')">
                 <div class="icon">🖼️</div>
                 <div class="label">相册照片</div>
             </button>
@@ -365,7 +371,7 @@
             </div>
             
             <!-- 博客文章 -->
-            <div class="edit-card" id="section-articles">
+            <div class="edit-card" id="section-articles" style="display:none;">
                 <h3>📝 博客文章</h3>
                 <div id="articlesList"></div>
                 
@@ -379,7 +385,7 @@
             </div>
             
             <!-- 相册 -->
-            <div class="edit-card" id="section-gallery">
+            <div class="edit-card" id="section-photos" style="display:none;">
                 <h3>🖼️ 相册照片</h3>
                 <div id="photosList"></div>
                 
@@ -404,7 +410,7 @@
             </div>
             
             <!-- 联系方式 -->
-            <div class="edit-card" id="section-contact">
+            <div class="edit-card" id="section-contact" style="display:none;">
                 <h3>📧 联系方式</h3>
                 <div class="edit-group">
                     <label>邮箱</label>
@@ -425,7 +431,30 @@
     <!-- 提示 -->
     <div class="toast" id="toast"></div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
     <script>
+        // Firebase 配置（你的项目）
+        const firebaseConfig = {
+            apiKey: "AIzaSyAcrFCK-nYFNDuAh3GbdM1U-Td458V5ILQ",
+            authDomain: "my-website-data-188e6.firebaseapp.com",
+            databaseURL: "https://my-website-data-188e6-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "my-website-data-188e6",
+            storageBucket: "my-website-data-188e6.firebasestorage.app",
+            messagingSenderId: "693388911917",
+            appId: "1:693388911917:web:b54134ae1e02db47749fa4"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
+        // 数据存储（用于管理）
+        let articlesData = {};
+        let photosData = {};
+
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
             if (localStorage.getItem('adminLoggedIn') === 'true') {
@@ -473,11 +502,20 @@
         
         // ===== 个人资料 =====
         function loadProfile() {
-            const p = JSON.parse(localStorage.getItem('siteProfile') || '{}');
-            document.getElementById('edit-name').value = p.name || 'Dylankwal';
-            document.getElementById('edit-tagline').value = p.tagline || '热爱探索世界';
-            document.getElementById('edit-about').value = p.about || '对生活充满好奇';
-            document.getElementById('edit-interests').value = p.interests || '摄影,旅行,阅读';
+            const profileRef = db.ref('profile');
+            profileRef.once('value').then((snapshot) => {
+                const p = snapshot.val() || {};
+                document.getElementById('edit-name').value = p.name || 'Dylankwal';
+                document.getElementById('edit-tagline').value = p.tagline || '热爱探索世界';
+                document.getElementById('edit-about').value = p.about || '对生活充满好奇';
+                document.getElementById('edit-interests').value = p.interests || '摄影,旅行,阅读';
+                document.getElementById('syncStatus').textContent = '✓ 已同步';
+            }).catch(() => {
+                document.getElementById('edit-name').value = 'Dylankwal';
+                document.getElementById('edit-tagline').value = '热爱探索世界';
+                document.getElementById('edit-about').value = '对生活充满好奇';
+                document.getElementById('edit-interests').value = '摄影,旅行,阅读';
+            });
         }
         
         function saveProfile() {
@@ -487,30 +525,46 @@
                 about: document.getElementById('edit-about').value,
                 interests: document.getElementById('edit-interests').value
             };
-            localStorage.setItem('siteProfile', JSON.stringify(p));
+            return db.ref('profile').set(p);
         }
         
         // ===== 文章 =====
         function loadArticles() {
             const list = document.getElementById('articlesList');
-            const articles = JSON.parse(localStorage.getItem('siteArticles') || '[]');
+            const articlesRef = db.ref('articles');
+            
+            articlesRef.once('value').then((snapshot) => {
+                articlesData = snapshot.val() || {};
+                renderArticlesList();
+            }).catch(() => {
+                articlesData = {};
+                renderArticlesList();
+            });
+        }
+        
+        function renderArticlesList() {
+            const list = document.getElementById('articlesList');
+            const articles = Object.values(articlesData);
             
             if (articles.length === 0) {
                 list.innerHTML = '<p style="color:#999;text-align:center;padding:1rem;">暂无文章</p>';
                 return;
             }
             
-            list.innerHTML = articles.map((a, i) => `
-                <div class="item-row">
-                    <div class="content">
-                        <h4>${a.title}</h4>
-                        <p>${a.date} · ${a.content.substring(0, 40)}...</p>
+            list.innerHTML = articles.map((a, key) => {
+                const articleKey = Object.keys(articlesData).find(k => articlesData[k] === a);
+                return `
+                    <div class="item-row">
+                        <div class="content">
+                            <h4>${a.title}</h4>
+                            <p>${a.date} · ${(a.content || '').substring(0, 40)}...</p>
+                        </div>
+                        <div class="actions">
+                            <button class="btn-icon btn-del" onclick="delArticle('${articleKey}')">🗑️</button>
+                        </div>
                     </div>
-                    <div class="actions">
-                        <button class="btn-icon btn-del" onclick="delArticle(${i})">🗑️</button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
         
         function addArticle() {
@@ -523,54 +577,67 @@
                 return;
             }
             
-            const articles = JSON.parse(localStorage.getItem('siteArticles') || '[]');
-            articles.unshift({ 
+            const newRef = db.ref('articles').push();
+            newRef.set({ 
                 title, 
                 date: date || new Date().toISOString().split('T')[0], 
                 content 
+            }).then(() => {
+                document.getElementById('new-article-title').value = '';
+                document.getElementById('new-article-content').value = '';
+                loadArticles();
+                showToast('文章已添加！', true);
             });
-            localStorage.setItem('siteArticles', JSON.stringify(articles));
-            
-            document.getElementById('new-article-title').value = '';
-            document.getElementById('new-article-content').value = '';
-            
-            loadArticles();
-            showToast('文章已添加！', true);
         }
         
-        function delArticle(i) {
+        function delArticle(key) {
             if (!confirm('删除这篇文章？')) return;
-            const articles = JSON.parse(localStorage.getItem('siteArticles') || '[]');
-            articles.splice(i, 1);
-            localStorage.setItem('siteArticles', JSON.stringify(articles));
-            loadArticles();
-            showToast('已删除', true);
+            db.ref('articles/' + key).remove().then(() => {
+                loadArticles();
+                showToast('已删除', true);
+            });
         }
         
         // ===== 相册 =====
         function loadPhotos() {
             const list = document.getElementById('photosList');
-            const photos = JSON.parse(localStorage.getItem('sitePhotos') || '[]');
+            const photosRef = db.ref('photos');
+            
+            photosRef.once('value').then((snapshot) => {
+                photosData = snapshot.val() || {};
+                renderPhotosList();
+            }).catch(() => {
+                photosData = {};
+                renderPhotosList();
+            });
+        }
+        
+        function renderPhotosList() {
+            const list = document.getElementById('photosList');
+            const photos = Object.values(photosData);
             
             if (photos.length === 0) {
                 list.innerHTML = '<p style="color:#999;text-align:center;padding:1rem;">暂无照片</p>';
                 return;
             }
             
-            list.innerHTML = photos.map((p, i) => `
-                <div class="item-row">
-                    <div class="content" style="display:flex;align-items:center;gap:1rem;">
-                        <span style="font-size:2rem;">${p.icon}</span>
-                        <div>
-                            <h4>${p.title}</h4>
-                            <p>${p.detail || ''}</p>
+            list.innerHTML = photos.map(p => {
+                const photoKey = Object.keys(photosData).find(k => photosData[k] === p);
+                return `
+                    <div class="item-row">
+                        <div class="content" style="display:flex;align-items:center;gap:1rem;">
+                            <span style="font-size:2rem;">${p.icon}</span>
+                            <div>
+                                <h4>${p.title}</h4>
+                                <p>${p.detail || ''}</p>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn-icon btn-del" onclick="delPhoto('${photoKey}')">🗑️</button>
                         </div>
                     </div>
-                    <div class="actions">
-                        <button class="btn-icon btn-del" onclick="delPhoto(${i})">🗑️</button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
         
         function addPhoto() {
@@ -583,32 +650,34 @@
                 return;
             }
             
-            const photos = JSON.parse(localStorage.getItem('sitePhotos') || '[]');
-            photos.unshift({ icon, title, detail });
-            localStorage.setItem('sitePhotos', JSON.stringify(photos));
-            
-            document.getElementById('new-photo-title').value = '';
-            document.getElementById('new-photo-detail').value = '';
-            
-            loadPhotos();
-            showToast('照片已添加！', true);
+            const newRef = db.ref('photos').push();
+            newRef.set({ icon, title, detail }).then(() => {
+                document.getElementById('new-photo-title').value = '';
+                document.getElementById('new-photo-detail').value = '';
+                loadPhotos();
+                showToast('照片已添加！', true);
+            });
         }
         
-        function delPhoto(i) {
+        function delPhoto(key) {
             if (!confirm('删除这张照片？')) return;
-            const photos = JSON.parse(localStorage.getItem('sitePhotos') || '[]');
-            photos.splice(i, 1);
-            localStorage.setItem('sitePhotos', JSON.stringify(photos));
-            loadPhotos();
-            showToast('已删除', true);
+            db.ref('photos/' + key).remove().then(() => {
+                loadPhotos();
+                showToast('已删除', true);
+            });
         }
         
         // ===== 联系方式 =====
         function loadContact() {
-            const c = JSON.parse(localStorage.getItem('siteContact') || '{}');
-            document.getElementById('edit-email').value = c.email || 'guoyuchen200749@163.com';
-            document.getElementById('edit-wechat').value = c.wechat || '';
-            document.getElementById('edit-weibo').value = c.weibo || '';
+            const contactRef = db.ref('contact');
+            contactRef.once('value').then((snapshot) => {
+                const c = snapshot.val() || {};
+                document.getElementById('edit-email').value = c.email || 'guoyuchen200749@163.com';
+                document.getElementById('edit-wechat').value = c.wechat || '';
+                document.getElementById('edit-weibo').value = c.weibo || '';
+            }).catch(() => {
+                document.getElementById('edit-email').value = 'guoyuchen200749@163.com';
+            });
         }
         
         function saveContact() {
@@ -617,14 +686,16 @@
                 wechat: document.getElementById('edit-wechat').value,
                 weibo: document.getElementById('edit-weibo').value
             };
-            localStorage.setItem('siteContact', JSON.stringify(c));
+            return db.ref('contact').set(c);
         }
         
         // 保存全部
         function saveAll() {
-            saveProfile();
-            saveContact();
-            showToast('💾 所有更改已保存！', true);
+            Promise.all([saveProfile(), saveContact()]).then(() => {
+                showToast('💾 所有更改已保存到云端！', true);
+            }).catch(() => {
+                showToast('保存失败，请重试');
+            });
         }
         
         // 提示
