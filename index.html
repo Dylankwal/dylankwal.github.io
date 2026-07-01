@@ -7,16 +7,20 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- 导航栏 -->
     <header>
         <nav>
             <a href="#home">首页</a>
             <a href="#about">关于</a>
             <a href="#interests">兴趣</a>
-            <a href="#gallery">相册</a>
+            <a href="gallery.html">相册</a>
+            <a href="blog.html">博客</a>
+            <a href="message.html">留言</a>
             <a href="#contact">联系</a>
         </nav>
     </header>
 
+    <!-- 首屏区域 -->
     <section id="home" class="hero">
         <div class="hero-content">
             <h1>你好，我是 Dylankwal</h1>
@@ -25,13 +29,14 @@
         </div>
     </section>
 
+    <!-- 关于我 -->
     <section id="about">
         <h2>关于我</h2>
         <div class="about-content">
             <div class="about-text">
                 <p>你好！我是一个对生活充满好奇的人。</p>
-                <p>喜欢尝试新事物，追求简单而有意义的生活。</p>
-                <p>这个网站是我的个人空间，用来分享我的想法、经历和作品。</p>
+                <p>喜欢尝试新事物，追求简单而有意义的生活。无论是在学习新技能，还是在旅途中发现美景，都让我感到充实和快乐。</p>
+                <p>这个网站是我的个人空间，用来分享我的想法、经历和作品。希望能在这里认识更多志同道合的朋友。</p>
             </div>
             <div class="skills">
                 <h3>兴趣标签</h3>
@@ -47,67 +52,96 @@
         </div>
     </section>
 
+    <!-- 兴趣 -->
     <section id="interests">
         <h2>我的兴趣</h2>
         <div class="projects-grid">
             <div class="project-card">
                 <div class="emoji">📸</div>
                 <h3>摄影</h3>
-                <p>喜欢用镜头捕捉生活中的美好瞬间</p>
+                <p>喜欢用镜头捕捉生活中的美好瞬间，城市街拍、自然风光都是我的最爱。</p>
             </div>
             <div class="project-card">
                 <div class="emoji">✈️</div>
                 <h3>旅行</h3>
-                <p>相信读万卷书不如行万里路</p>
+                <p>相信读万卷书不如行万里路，每一段旅程都是一次成长。</p>
             </div>
             <div class="project-card">
                 <div class="emoji">📚</div>
                 <h3>阅读</h3>
-                <p>阅读让我保持思考和进步</p>
+                <p>小说、散文、科普都有涉猎，阅读让我保持思考和进步。</p>
             </div>
             <div class="project-card">
                 <div class="emoji">🎵</div>
                 <h3>音乐</h3>
-                <p>喜欢各种类型的音乐</p>
+                <p>喜欢各种类型的音乐，摇滚、爵士、古典各有味道。</p>
             </div>
         </div>
     </section>
 
-    <section id="gallery">
-        <h2>最近动态</h2>
-        <div class="gallery-grid">
-            <div class="gallery-item">
-                <h3>🌅 日落时分</h3>
+    <!-- 相册预览 -->
+    <section id="gallery-preview">
+        <h2>📸 照片墙预览</h2>
+        <p style="text-align:center; margin-bottom:2rem; color:#666;">点击查看更多照片 → <a href="gallery.html" style="color:#e94560;">进入相册</a></p>
+        <div class="projects-grid" style="max-width:1000px; margin:0 auto;">
+            <div class="project-card">
+                <div class="emoji">🌅</div>
+                <h3>日落时分</h3>
                 <p>城市边缘的晚霞</p>
             </div>
-            <div class="gallery-item">
-                <h3>☕ 咖啡时光</h3>
-                <p>周末的午后</p>
-            </div>
-            <div class="gallery-item">
-                <h3>🏔️ 山野漫步</h3>
+            <div class="project-card">
+                <div class="emoji">🏔️</div>
+                <h3>山野漫步</h3>
                 <p>亲近大自然</p>
             </div>
-            <div class="gallery-item">
-                <h3>🎬 电影之夜</h3>
-                <p>重温经典老片</p>
+            <div class="project-card">
+                <div class="emoji">☕</div>
+                <h3>咖啡时光</h3>
+                <p>周末的午后</p>
             </div>
         </div>
     </section>
 
+    <!-- 博客预览 -->
+    <section id="blog-preview" style="background:#f8f9fa; max-width:100%;">
+        <div style="max-width:1000px; margin:0 auto; padding:5rem 2rem;">
+            <h2>📝 最新文章</h2>
+            <p style="text-align:center; margin-bottom:2rem; color:#666;">点击阅读更多 → <a href="blog.html" style="color:#e94560;">进入博客</a></p>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <h3>第一次尝试徒步</h3>
+                    <p>上周和朋友去了一趟郊外徒步，虽然很累，但看到山顶的风景那一刻，觉得一切都值了...</p>
+                </div>
+                <div class="project-card">
+                    <h3>学习摄影的第一个月</h3>
+                    <p>最近开始认真学摄影，从最基础的构图学起。虽然拍出来的照片还很普通...</p>
+                </div>
+                <div class="project-card">
+                    <h3>我的个人网站上线啦</h3>
+                    <p>花了几天时间，终于把自己的个人网站搭建好了。虽然还很简陋，但这是属于我自己的小空间...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 联系方式 -->
     <section id="contact">
         <h2>联系方式</h2>
         <div class="contact-content">
+            <p>如果你也想交个朋友，或者有任何想聊的话题</p>
             <p>欢迎给我发邮件！</p>
             <div class="contact-links">
                 <a href="mailto:guoyuchen200749@163.com">📧 发送邮件</a>
+                <a href="message.html">💬 留言板</a>
             </div>
             <div class="email-display">guoyuchen200749@163.com</div>
         </div>
     </section>
 
+    <!-- 页脚 -->
     <footer>
         <p>© 2026 Dylankwal. 用心生活，天天向上。</p>
     </footer>
 </body>
 </html>
+
