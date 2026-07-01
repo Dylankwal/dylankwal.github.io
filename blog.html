@@ -67,6 +67,12 @@
         .empty-state p {
             font-size: 1.1rem;
         }
+        
+        .loading-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #888;
+        }
     </style>
 </head>
 <body>
@@ -85,8 +91,7 @@
     <section style="padding-top: 8rem;">
         <h2>📝 我的博客</h2>
         <div class="blog-list" id="blog-container">
-            <!-- 文章由JS加载 -->
-            <div class="empty-state" id="loading">
+            <div class="loading-state" id="loading">
                 <div class="icon">📝</div>
                 <p>加载中...</p>
             </div>
@@ -97,22 +102,44 @@
         <p>© 2026 Dylankwal. 用心生活，天天向上。</p>
     </footer>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
     <script>
+        // Firebase 配置（你的项目）
+        const firebaseConfig = {
+            apiKey: "AIzaSyAcrFCK-nYFNDuAh3GbdM1U-Td458V5ILQ",
+            authDomain: "my-website-data-188e6.firebaseapp.com",
+            databaseURL: "https://my-website-data-188e6-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "my-website-data-188e6",
+            storageBucket: "my-website-data-188e6.firebasestorage.app",
+            messagingSenderId: "693388911917",
+            appId: "1:693388911917:web:b54134ae1e02db47749fa4"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         document.addEventListener('DOMContentLoaded', function() {
             loadBlog();
             loadName();
         });
         
         function loadName() {
-            const profile = JSON.parse(localStorage.getItem('siteProfile') || '{}');
-            if (profile.name) {
-                document.querySelector('footer p').innerHTML = 
-                    '© 2026 ' + profile.name + '. 用心生活，天天向上。';
-            }
+            const profileRef = db.ref('profile');
+            profileRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.name) {
+                    document.querySelector('footer p').innerHTML = 
+                        '© 2026 ' + data.name + '. 用心生活，天天向上。';
+                }
+            });
         }
         
         function loadBlog() {
-            const articles = JSON.parse(localStorage.getItem('siteArticles') || '[]');
+            const articlesRef = db.ref('articles');
             const container = document.getElementById('blog-container');
             
             // 默认文章
@@ -134,27 +161,39 @@
                 }
             ];
             
-            // 合并：用户添加的文章优先
-            const allArticles = articles.length > 0 ? articles : defaultArticles;
-            
-            if (allArticles.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">✍️</div>
-                        <p>还没有文章</p>
-                        <p style="font-size:0.9rem;margin-top:0.5rem;">去后台添加文章吧！</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = allArticles.map(a => `
-                <article class="blog-item">
-                    <div class="blog-date">${formatDate(a.date)}</div>
-                    <h3>${a.title}</h3>
-                    <p>${a.content}</p>
-                </article>
-            `).join('');
+            articlesRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                
+                if (data) {
+                    // Firebase 数据存在
+                    const articles = Object.values(data);
+                    container.innerHTML = articles.map(a => `
+                        <article class="blog-item">
+                            <div class="blog-date">${formatDate(a.date)}</div>
+                            <h3>${a.title}</h3>
+                            <p>${a.content}</p>
+                        </article>
+                    `).join('');
+                } else {
+                    // 使用默认文章
+                    container.innerHTML = defaultArticles.map(a => `
+                        <article class="blog-item">
+                            <div class="blog-date">${formatDate(a.date)}</div>
+                            <h3>${a.title}</h3>
+                            <p>${a.content}</p>
+                        </article>
+                    `).join('');
+                }
+            }, (error) => {
+                // 出错时使用默认
+                container.innerHTML = defaultArticles.map(a => `
+                    <article class="blog-item">
+                        <div class="blog-date">${formatDate(a.date)}</div>
+                        <h3>${a.title}</h3>
+                        <p>${a.content}</p>
+                    </article>
+                `).join('');
+            });
         }
         
         function formatDate(dateStr) {
