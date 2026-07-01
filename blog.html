@@ -52,6 +52,21 @@
         .read-more:hover {
             text-decoration: underline;
         }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #888;
+        }
+        
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state p {
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 <body>
@@ -69,48 +84,88 @@
 
     <section style="padding-top: 8rem;">
         <h2>📝 我的博客</h2>
-        <div class="blog-list">
-            
-            <article class="blog-item">
-                <div class="blog-date">2026年6月28日</div>
-                <h3>第一次尝试徒步</h3>
-                <p>上周和朋友去了一趟郊外徒步，虽然很累，但看到山顶的风景那一刻，觉得一切都值了。大自然的魅力真的无法用语言形容，下次还要去！</p>
-                <a href="#" class="read-more">阅读更多 →</a>
-            </article>
-            
-            <article class="blog-item">
-                <div class="blog-date">2026年6月20日</div>
-                <h3>学习摄影的第一个月</h3>
-                <p>最近开始认真学摄影，从最基础的构图学起。虽然拍出来的照片还很普通，但每次按下快门的那一刻都让我感到满足。继续加油！</p>
-                <a href="#" class="read-more">阅读更多 →</a>
-            </article>
-            
-            <article class="blog-item">
-                <div class="blog-date">2026年6月15日</div>
-                <h3>最近在读的几本书</h3>
-                <p>最近迷上了悬疑小说，一口气读完了三本东野圭吾的书。推荐《白夜行》，人物刻画太深刻了。除了小说，也在看一些心理学入门的书籍。</p>
-                <a href="#" class="read-more">阅读更多 →</a>
-            </article>
-            
-            <article class="blog-item">
-                <div class="blog-date">2026年6月5日</div>
-                <h3>周末的咖啡店时光</h3>
-                <p>发现了一家很棒的咖啡店，环境安静，适合一个人待着看看书或者发呆。老板人很好，会推荐适合口味的咖啡。已经成为我的周末据点了。</p>
-                <a href="#" class="read-more">阅读更多 →</a>
-            </article>
-            
-            <article class="blog-item">
-                <div class="blog-date">2026年5月28日</div>
-                <h3>我的个人网站上线啦</h3>
-                <p>花了几天时间，终于把自己的个人网站搭建好了。虽然还很简陋，但这是属于我自己的小空间，以后会慢慢丰富内容，记录生活的点滴。</p>
-                <a href="#" class="read-more">阅读更多 →</a>
-            </article>
-            
+        <div class="blog-list" id="blog-container">
+            <!-- 文章由JS加载 -->
+            <div class="empty-state" id="loading">
+                <div class="icon">📝</div>
+                <p>加载中...</p>
+            </div>
         </div>
     </section>
 
     <footer>
         <p>© 2026 Dylankwal. 用心生活，天天向上。</p>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBlog();
+            loadName();
+        });
+        
+        function loadName() {
+            const profile = JSON.parse(localStorage.getItem('siteProfile') || '{}');
+            if (profile.name) {
+                document.querySelector('footer p').innerHTML = 
+                    '© 2026 ' + profile.name + '. 用心生活，天天向上。';
+            }
+        }
+        
+        function loadBlog() {
+            const articles = JSON.parse(localStorage.getItem('siteArticles') || '[]');
+            const container = document.getElementById('blog-container');
+            
+            // 默认文章
+            const defaultArticles = [
+                {
+                    title: '第一次尝试徒步',
+                    date: '2026-06-28',
+                    content: '上周和朋友去了一趟郊外徒步，虽然很累，但看到山顶的风景那一刻，觉得一切都值了。大自然的魅力真的无法用语言形容，下次还要去！'
+                },
+                {
+                    title: '学习摄影的第一个月',
+                    date: '2026-06-20',
+                    content: '最近开始认真学摄影，从最基础的构图学起。虽然拍出来的照片还很普通，但每次按下快门的那一刻都让我感到满足。继续加油！'
+                },
+                {
+                    title: '最近在读的几本书',
+                    date: '2026-06-15',
+                    content: '最近迷上了悬疑小说，一口气读完了三本东野圭吾的书。推荐《白夜行》，人物刻画太深刻了。除了小说，也在看一些心理学入门的书籍。'
+                }
+            ];
+            
+            // 合并：用户添加的文章优先
+            const allArticles = articles.length > 0 ? articles : defaultArticles;
+            
+            if (allArticles.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">✍️</div>
+                        <p>还没有文章</p>
+                        <p style="font-size:0.9rem;margin-top:0.5rem;">去后台添加文章吧！</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = allArticles.map(a => `
+                <article class="blog-item">
+                    <div class="blog-date">${formatDate(a.date)}</div>
+                    <h3>${a.title}</h3>
+                    <p>${a.content}</p>
+                </article>
+            `).join('');
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+    </script>
 </body>
 </html>
