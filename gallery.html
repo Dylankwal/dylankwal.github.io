@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>相册 - Dylankwal</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .photo-card {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .photo-card:hover {
+            transform: scale(1.02);
+        }
+        
+        .photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .photo-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .photo-placeholder .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .photo-placeholder .desc {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .photo-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+            padding: 1.5rem;
+        }
+        
+        .photo-overlay h4 {
+            margin-bottom: 0.3rem;
+        }
+        
+        .photo-overlay p {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        
+        .tips {
+            text-align: center;
+            max-width: 600px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        .tips h3 {
+            color: #1a1a2e;
+            margin-bottom: 1rem;
+        }
+        
+        .tips p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html">首页</a>
+            <a href="index.html#about">关于</a>
+            <a href="index.html#interests">兴趣</a>
+            <a href="gallery.html">相册</a>
+            <a href="blog.html">博客</a>
+            <a href="message.html">留言</a>
+            <a href="index.html#contact">联系</a>
+        </nav>
+    </header>
+
+    <section style="padding-top: 8rem;">
+        <h2>🖼️ 照片墙</h2>
+        
+        <div class="photo-grid">
+            
+            <div class="photo-card">
+                <div class="photo-placeholder">
+                    <span class="icon">🌅</span>
+                    <span class="desc">日落晚霞</span>
+                </div>
+                <div class="photo-overlay">
+                    <h4>日落时分</h4>
+                    <p>城市边缘的晚霞</p>
+                </div>
+            </div>
+            
+            <div class="photo-card">
+                <div class="photo-placeholder" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <span class="icon">🏔️</span>
+                    <span class="desc">山川风景</span>
+                </div>
+                <div class="photo-overlay">
+                    <h4>山野漫步</h4>
+                    <p>亲近大自然</p>
+                </div>
+            </div>
+            
+            <div class="photo-card">
+                <div class="photo-placeholder" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);">
+                    <span class="icon">☕</span>
+                    <span class="desc">咖啡时光</span>
+                </div>
+                <div class="photo-overlay">
+                    <h4>咖啡下午茶</h4>
+                    <p>周末的悠闲时光</p>
+                </div>
+            </div>
+            
+            <div class="photo-card">
+                <div class="photo-placeholder" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <span class="icon">🌊</span>
+                    <span class="desc">海边风景</span>
+                </div>
+                <div class="photo-overlay">
+                    <h4>海边日落</h4>
+                    <p>聆听海浪声</p>
+                </div>
+            </div>
+            
+            <div class="photo-card">
+                <div class="photo-placeholder" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                    <span class="icon">🌸</span>
+                    <span class="desc">城市街景</span>
+                </div>
+                <div class="photo-overlay">
+                    <h4>街头巷尾</h4>
+                    <p>发现城市之美</p>
+                </div>
+            </div>
+            
+            <div class="photo-card">
+                <div class="photo-placeholder" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                    <span class="icon">🎬</span>
+                    <span class="desc">生活记录</span>
+                </div>
+                <div class="photo-overlay">
+                    <h4>电影之夜</h4>
+                    <p>重温经典老片</p>
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="tips">
+            <h3>💡 如何添加自己的照片</h3>
+            <p>替换方法：在 GitHub 仓库创建 images 文件夹，上传照片后把 .photo-placeholder 替换为 img 标签即可。后续我会教你具体操作方法。</p>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2026 Dylankwal. 用心生活，天天向上。</p>
+    </footer>
+</body>
+</html>
