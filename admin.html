@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 网站管理 - 一站式后台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+        }
+        
+        /* 登录 */
+        .login-screen {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .login-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 380px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        
+        .login-card h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        
+        .login-card input {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        
+        .login-card button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        
+        /* 主界面 */
+        .main-app {
+            display: none;
+        }
+        
+        .main-app.active {
+            display: block;
+        }
+        
+        /* 顶部导航 */
+        .topbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .topbar h1 {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        
+        .topbar-actions {
+            display: flex;
+            gap: 0.8rem;
+        }
+        
+        .topbar button {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .btn-save {
+            background: white;
+            color: #667eea;
+        }
+        
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        /* 快捷操作区 */
+        .quick-actions {
+            background: white;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .quick-btn {
+            padding: 1.2rem 1rem;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .quick-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .quick-btn .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .quick-btn .label {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        /* 编辑区域 */
+        .edit-area {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        
+        .edit-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .edit-card h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .edit-group {
+            margin-bottom: 1.2rem;
+        }
+        
+        .edit-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .edit-group input,
+        .edit-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        
+        .edit-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        /* 列表编辑 */
+        .item-list {
+            margin-top: 1rem;
+        }
+        
+        .item-row {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .item-row .content {
+            flex: 1;
+        }
+        
+        .item-row h4 {
+            color: #333;
+            font-size: 1rem;
+            margin-bottom: 0.2rem;
+        }
+        
+        .item-row p {
+            color: #888;
+            font-size: 0.85rem;
+        }
+        
+        .item-row .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .btn-del {
+            background: #ffe0e0;
+        }
+        
+        /* 添加表单 */
+        .add-form {
+            background: #f0f7ff;
+            padding: 1.2rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            border: 2px dashed #667eea;
+        }
+        
+        .add-form h4 {
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+        
+        .add-form input,
+        .add-form textarea,
+        .add-form select {
+            width: 100%;
+            padding: 0.7rem;
+            margin-bottom: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .btn-add {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        /* 提示 */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .toast.success {
+            background: #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录 -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-card">
+            <h2>🔐 管理后台</h2>
+            <input type="text" id="username" placeholder="用户名" value="admin">
+            <input type="password" id="password" placeholder="密码" value="admin123">
+            <button onclick="login()">登录</button>
+        </div>
+    </div>
+    
+    <!-- 主界面 -->
+    <div class="main-app" id="mainApp">
+        <div class="topbar">
+            <h1>🎯 网站管理后台</h1>
+            <div class="topbar-actions">
+                <button class="btn-save" onclick="saveAll()">💾 保存全部</button>
+                <button class="btn-logout" onclick="logout()">退出</button>
+            </div>
+        </div>
+        
+        <!-- 快捷操作 -->
+        <div class="quick-actions">
+            <button class="quick-btn" onclick="showSection('profile')">
+                <div class="icon">👤</div>
+                <div class="label">个人信息</div>
+            </button>
+            <button class="quick-btn" onclick="showSection('articles')">
+                <div class="icon">📝</div>
+                <div class="label">博客文章</div>
+            </button>
+            <button class="quick-btn" onclick="showSection('gallery')">
+                <div class="icon">🖼️</div>
+                <div class="label">相册照片</div>
+            </button>
+            <button class="quick-btn" onclick="showSection('contact')">
+                <div class="icon">📧</div>
+                <div class="label">联系方式</div>
+            </button>
+        </div>
+        
+        <div class="edit-area">
+            <!-- 个人信息 -->
+            <div class="edit-card" id="section-profile">
+                <h3>👤 个人信息</h3>
+                <div class="edit-group">
+                    <label>名字</label>
+                    <input type="text" id="edit-name" placeholder="你的名字">
+                </div>
+                <div class="edit-group">
+                    <label>一句话介绍</label>
+                    <input type="text" id="edit-tagline" placeholder="热爱探索世界...">
+                </div>
+                <div class="edit-group">
+                    <label>详细介绍</label>
+                    <textarea id="edit-about" placeholder="介绍一下你自己..."></textarea>
+                </div>
+                <div class="edit-group">
+                    <label>兴趣标签（用逗号分隔）</label>
+                    <input type="text" id="edit-interests" placeholder="摄影,旅行,阅读">
+                </div>
+            </div>
+            
+            <!-- 博客文章 -->
+            <div class="edit-card" id="section-articles">
+                <h3>📝 博客文章</h3>
+                <div id="articlesList"></div>
+                
+                <div class="add-form">
+                    <h4>➕ 添加新文章</h4>
+                    <input type="text" id="new-article-title" placeholder="文章标题">
+                    <input type="date" id="new-article-date">
+                    <textarea id="new-article-content" placeholder="文章内容..."></textarea>
+                    <button class="btn-add" onclick="addArticle()">添加文章</button>
+                </div>
+            </div>
+            
+            <!-- 相册 -->
+            <div class="edit-card" id="section-gallery">
+                <h3>🖼️ 相册照片</h3>
+                <div id="photosList"></div>
+                
+                <div class="add-form">
+                    <h4>➕ 添加新照片</h4>
+                    <select id="new-photo-icon">
+                        <option value="🌅">🌅 日落</option>
+                        <option value="🏔️">🏔️ 山川</option>
+                        <option value="☕">☕ 咖啡</option>
+                        <option value="🌊">🌊 大海</option>
+                        <option value="🌸">🌸 花草</option>
+                        <option value="🎬">🎬 电影</option>
+                        <option value="📚">📚 阅读</option>
+                        <option value="🎵">🎵 音乐</option>
+                        <option value="🍜">🍜 美食</option>
+                        <option value="✈️">✈️ 旅行</option>
+                    </select>
+                    <input type="text" id="new-photo-title" placeholder="照片标题">
+                    <input type="text" id="new-photo-detail" placeholder="详细描述">
+                    <button class="btn-add" onclick="addPhoto()">添加照片</button>
+                </div>
+            </div>
+            
+            <!-- 联系方式 -->
+            <div class="edit-card" id="section-contact">
+                <h3>📧 联系方式</h3>
+                <div class="edit-group">
+                    <label>邮箱</label>
+                    <input type="email" id="edit-email" placeholder="your@email.com">
+                </div>
+                <div class="edit-group">
+                    <label>微信（选填）</label>
+                    <input type="text" id="edit-wechat" placeholder="微信号">
+                </div>
+                <div class="edit-group">
+                    <label>微博（选填）</label>
+                    <input type="text" id="edit-weibo" placeholder="微博ID">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 提示 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('adminLoggedIn') === 'true') {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').classList.add('active');
+                loadAll();
+            }
+        });
+        
+        // 登录
+        function login() {
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            if (u === 'admin' && p === 'admin123') {
+                localStorage.setItem('adminLoggedIn', 'true');
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').classList.add('active');
+                loadAll();
+                showToast('登录成功！', true);
+            } else {
+                showToast('账号密码错误');
+            }
+        }
+        
+        // 退出
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            location.reload();
+        }
+        
+        // 显示区域
+        function showSection(name) {
+            document.querySelectorAll('.edit-card').forEach(c => c.style.display = 'none');
+            document.getElementById('section-' + name).style.display = 'block';
+            document.getElementById('section-' + name).scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 加载所有数据
+        function loadAll() {
+            loadProfile();
+            loadArticles();
+            loadPhotos();
+            loadContact();
+        }
+        
+        // ===== 个人资料 =====
+        function loadProfile() {
+            const p = JSON.parse(localStorage.getItem('siteProfile') || '{}');
+            document.getElementById('edit-name').value = p.name || 'Dylankwal';
+            document.getElementById('edit-tagline').value = p.tagline || '热爱探索世界';
+            document.getElementById('edit-about').value = p.about || '对生活充满好奇';
+            document.getElementById('edit-interests').value = p.interests || '摄影,旅行,阅读';
+        }
+        
+        function saveProfile() {
+            const p = {
+                name: document.getElementById('edit-name').value,
+                tagline: document.getElementById('edit-tagline').value,
+                about: document.getElementById('edit-about').value,
+                interests: document.getElementById('edit-interests').value
+            };
+            localStorage.setItem('siteProfile', JSON.stringify(p));
+        }
+        
+        // ===== 文章 =====
+        function loadArticles() {
+            const list = document.getElementById('articlesList');
+            const articles = JSON.parse(localStorage.getItem('siteArticles') || '[]');
+            
+            if (articles.length === 0) {
+                list.innerHTML = '<p style="color:#999;text-align:center;padding:1rem;">暂无文章</p>';
+                return;
+            }
+            
+            list.innerHTML = articles.map((a, i) => `
+                <div class="item-row">
+                    <div class="content">
+                        <h4>${a.title}</h4>
+                        <p>${a.date} · ${a.content.substring(0, 40)}...</p>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-icon btn-del" onclick="delArticle(${i})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function addArticle() {
+            const title = document.getElementById('new-article-title').value.trim();
+            const date = document.getElementById('new-article-date').value;
+            const content = document.getElementById('new-article-content').value.trim();
+            
+            if (!title || !content) {
+                showToast('请填写标题和内容');
+                return;
+            }
+            
+            const articles = JSON.parse(localStorage.getItem('siteArticles') || '[]');
+            articles.unshift({ 
+                title, 
+                date: date || new Date().toISOString().split('T')[0], 
+                content 
+            });
+            localStorage.setItem('siteArticles', JSON.stringify(articles));
+            
+            document.getElementById('new-article-title').value = '';
+            document.getElementById('new-article-content').value = '';
+            
+            loadArticles();
+            showToast('文章已添加！', true);
+        }
+        
+        function delArticle(i) {
+            if (!confirm('删除这篇文章？')) return;
+            const articles = JSON.parse(localStorage.getItem('siteArticles') || '[]');
+            articles.splice(i, 1);
+            localStorage.setItem('siteArticles', JSON.stringify(articles));
+            loadArticles();
+            showToast('已删除', true);
+        }
+        
+        // ===== 相册 =====
+        function loadPhotos() {
+            const list = document.getElementById('photosList');
+            const photos = JSON.parse(localStorage.getItem('sitePhotos') || '[]');
+            
+            if (photos.length === 0) {
+                list.innerHTML = '<p style="color:#999;text-align:center;padding:1rem;">暂无照片</p>';
+                return;
+            }
+            
+            list.innerHTML = photos.map((p, i) => `
+                <div class="item-row">
+                    <div class="content" style="display:flex;align-items:center;gap:1rem;">
+                        <span style="font-size:2rem;">${p.icon}</span>
+                        <div>
+                            <h4>${p.title}</h4>
+                            <p>${p.detail || ''}</p>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-icon btn-del" onclick="delPhoto(${i})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function addPhoto() {
+            const icon = document.getElementById('new-photo-icon').value;
+            const title = document.getElementById('new-photo-title').value.trim();
+            const detail = document.getElementById('new-photo-detail').value.trim();
+            
+            if (!title) {
+                showToast('请填写标题');
+                return;
+            }
+            
+            const photos = JSON.parse(localStorage.getItem('sitePhotos') || '[]');
+            photos.unshift({ icon, title, detail });
+            localStorage.setItem('sitePhotos', JSON.stringify(photos));
+            
+            document.getElementById('new-photo-title').value = '';
+            document.getElementById('new-photo-detail').value = '';
+            
+            loadPhotos();
+            showToast('照片已添加！', true);
+        }
+        
+        function delPhoto(i) {
+            if (!confirm('删除这张照片？')) return;
+            const photos = JSON.parse(localStorage.getItem('sitePhotos') || '[]');
+            photos.splice(i, 1);
+            localStorage.setItem('sitePhotos', JSON.stringify(photos));
+            loadPhotos();
+            showToast('已删除', true);
+        }
+        
+        // ===== 联系方式 =====
+        function loadContact() {
+            const c = JSON.parse(localStorage.getItem('siteContact') || '{}');
+            document.getElementById('edit-email').value = c.email || 'guoyuchen200749@163.com';
+            document.getElementById('edit-wechat').value = c.wechat || '';
+            document.getElementById('edit-weibo').value = c.weibo || '';
+        }
+        
+        function saveContact() {
+            const c = {
+                email: document.getElementById('edit-email').value,
+                wechat: document.getElementById('edit-wechat').value,
+                weibo: document.getElementById('edit-weibo').value
+            };
+            localStorage.setItem('siteContact', JSON.stringify(c));
+        }
+        
+        // 保存全部
+        function saveAll() {
+            saveProfile();
+            saveContact();
+            showToast('💾 所有更改已保存！', true);
+        }
+        
+        // 提示
+        function showToast(msg, success = false) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast show' + (success ? ' success' : '');
+            setTimeout(() => t.className = 'toast', 2500);
+        }
+    </script>
+</body>
+</html>
